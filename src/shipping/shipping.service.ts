@@ -32,6 +32,11 @@ export class ShippingService {
       .update(rawBody)
       .digest('hex');
 
+    // --- TEMPORARY DEBUG LOGS ---
+    console.log('Calculated Hash:', calculatedHash);
+    console.log('Received Signature:', signature);
+    // ----------------------------
+
     // ✅ Secure timing-safe comparison
     try {
         return crypto.timingSafeEqual(
