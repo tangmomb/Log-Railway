@@ -35,12 +35,10 @@ export class ShippingService {
    * Logs full details ONLY on success.
    */
   logSuccess(headers: any, rawBody: string, parsedBody: any) {
-    console.log('--- HEADERS ---');
-    console.log(JSON.stringify(headers, null, 2));
-    console.log('--- RAW BODY ---');
-    console.log(rawBody || '(EMPTY)');
-    console.log('--- PARSED BODY ---');
-    console.log(JSON.stringify(parsedBody, null, 2));
-    console.log('----------------');
+    console.log('--- WEBHOOK OK ---');
+    console.log('HEADERS:', JSON.stringify(headers, null, 2));
+    console.log('RAW BODY:', rawBody || '(EMPTY)');
+    console.log('PARSED BODY:', JSON.stringify(parsedBody, null, 2));
+    console.log('------------------');
   }
 }
