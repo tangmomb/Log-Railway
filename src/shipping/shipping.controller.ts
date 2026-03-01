@@ -7,7 +7,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { ShippingService } from './shipping.service';
 
 @Controller('shipping')
