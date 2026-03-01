@@ -3,27 +3,29 @@ import {
   Post,
   Req,
   Headers,
+  Body,
   HttpCode,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { RawBodyRequest } from '@nestjs/common';
+import { Request } from 'express';
+import { ShippingService } from './shipping.service';
 
 @Controller('shipping')
 export class ShippingController {
+  constructor(private readonly shippingService: ShippingService) {}
 
   @Post('webhook')
   @HttpCode(200)
   handleWebhook(
     @Headers() headers: any,
-    @Req() req: Request & { rawBody?: string },
+    @Body() parsedBody: any,
+    @Req() req: RawBodyRequest<Request>,
   ) {
-
-    const rawBody = req.rawBody ?? '';
-
-    console.log('--- WEBHOOK RECEIVED ---');
-    console.log('HEADERS:', headers);
-    console.log('RAW BODY:', rawBody);
-    console.log('------------------------');
-
+    const rawBody = req.rawBody ? req.rawBody.toString('utf8') : '';
+    
+    // This will now correctly call the service with verification
+    this.shippingService.logWebhook(headers, rawBody, parsedBody);
+    
     return { status: 'received' };
   }
 }
