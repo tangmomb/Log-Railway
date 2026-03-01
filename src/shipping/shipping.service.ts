@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
@@ -6,18 +6,24 @@ import * as crypto from 'crypto';
 export class ShippingService {
   constructor(private configService: ConfigService) {}
 
+  /**
+   * Strictly verifies the Sendcloud signature using HMAC-SHA256.
+   * Fails if the secret is missing, if the signature is missing, or if they don't match.
+   */
   verifySignature(headers: any, rawBody: string): boolean {
     const secret = this.configService.get<string>('SENDCLOUD_WEBHOOK_SECRET');
+    
+    // ❌ DO NOT allow silently if key is missing
     if (!secret) {
-      console.warn('SENDCLOUD_WEBHOOK_SECRET is not defined');
-      return true; // Still allow for debug if no secret is set
+      console.error('CRITICAL ERROR: SENDCLOUD_WEBHOOK_SECRET is not configured in environment variables.');
+      throw new InternalServerErrorException('Server configuration error: Webhook secret missing.');
     }
 
-    // Sendcloud uses 'sendcloud-signature' or 'x-sendcloud-signature'
     const signature = headers['sendcloud-signature'] || headers['x-sendcloud-signature'];
     
+    // ❌ DO NOT allow if signature is missing
     if (!signature) {
-      console.error('No signature found in headers');
+      console.warn('Unauthorized: Missing signature header.');
       return false;
     }
 
@@ -26,7 +32,7 @@ export class ShippingService {
       .update(rawBody)
       .digest('hex');
 
-    // Timing-safe comparison to prevent timing attacks
+    // ✅ Secure timing-safe comparison
     try {
         return crypto.timingSafeEqual(
             Buffer.from(calculatedHash, 'utf8'),
@@ -54,8 +60,9 @@ export class ShippingService {
     
     console.log('----------------');
 
+    // ❌ Reject if verification failed
     if (!isVerified) {
-        throw new UnauthorizedException('Invalid signature');
+        throw new UnauthorizedException('Invalid or missing signature.');
     }
   }
 }
