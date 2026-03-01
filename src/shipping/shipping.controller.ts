@@ -3,7 +3,6 @@ import {
   Post,
   Req,
   Headers,
-  Body,
   HttpCode,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
@@ -18,11 +17,10 @@ export class ShippingController {
   @HttpCode(200)
   handleWebhook(
     @Headers() headers: any,
-    @Body() parsedBody: any,
     @Req() req: RawBodyRequest<Request>,
   ) {
     const rawBody = req.rawBody ? req.rawBody.toString('utf8') : '';
-    this.shippingService.logWebhook(headers, rawBody, parsedBody);
+    this.shippingService.logWebhook(headers, rawBody);
     return { status: 'received' };
   }
 }
